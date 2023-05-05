@@ -1,0 +1,6 @@
+scripts/*/slurm*.out
+testing/
+targets/*
+!targets/example
+scaffolds/*
+!scaffolds/*tar.gz

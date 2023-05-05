@@ -2,5 +2,6 @@ scripts/*/slurm*.out
 testing/
 targets/*
 !targets/example
+!targets/README.md
 scaffolds/*
 !scaffolds/*tar.gz

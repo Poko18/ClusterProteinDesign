@@ -16,16 +16,17 @@ source /home/tsatler/anaconda3/etc/profile.d/conda.sh
 # Define input parameters for RFdocking
 num_of_diffusions=20 # Number of RF diffusions per script
 total_mpnn=200
-mpnn_per_design=10 # Filtered mpnn sequences for AF2
-num_recycles=9
+mpnn_per_design=20 # Filtered mpnn sequences for AF2
+num_recycles=12
 sampling_temp=0.2 # ProteinMPNN sampling temperature
 
-prefix="cd5_lcb3_binder"
+prefix="cd5_lcb3_binder_v2"
 target_pdb="../../targets/cd5/inputs/2ja4.pdb"
 output="../../targets/cd5/outputs/fold_docking"
 hotspots='ppi.hotspot_res=[A288,A290,A298,A299,A328,A330,A362,A364]'
 #scaff_dir="../../scaffolds/rfdiff_filtered_scaffolds"
 scaff_dir="../../testing/testing_scaffolds/lcb3"
+
 ########################
 # RF diffusion
 ########################
@@ -80,7 +81,7 @@ if [ -d "$current_dir/outputs" ]; then
     rm -r "$current_dir/outputs" # remove hydra stuff
 fi
 if [ -e "$rf_out*.trb" ]; then
-    rm "$rf_out"*.trb # delete trb files
+    rm "$rf_out*.trb" # delete trb files
 fi
 if [ -d "$output/rf_dock/${prefix}_${SLURM_ARRAY_TASK_ID}/traj" ]; then
     rm -r "$output/rf_dock/${prefix}_${SLURM_ARRAY_TASK_ID}/traj" # delete trajectories
@@ -103,9 +104,6 @@ for ((i=0; i<${#input_files[@]}; i++)); do
   pdb_file=${input_files[$i]}
   echo $pdb_file AF2 design
   af_out=$output/mpnn_af2/${prefix}_${SLURM_ARRAY_TASK_ID}
-  python ../helper_scripts/colabinder.py $pdb_file $af_out B A --sampling_temp $sampling_temp --num_recycles $num_recycles --num_seqs $total_mpnn --num_filt_seq $mpnn_per_design --results_dataframe $output --break_design
+  python ../helper_scripts/colabinder.py $pdb_file $af_out B A --sampling_temp $sampling_temp --num_recycles $num_recycles --num_seqs $total_mpnn --num_filt_seq $mpnn_per_design --results_dataframe $output --break_design --save_best_only
 done
 
-## Add metric calculation? Add distance from hotspots with tensors!
-
-## Get best results?

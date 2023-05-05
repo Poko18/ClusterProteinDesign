@@ -3,7 +3,7 @@
 #SBATCH --gres=gpu:A40:1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=2
-#SBATCH --array=1-100%20
+#SBATCH --array=1%5
 #SBATCH --exclude=compute-6-2,compute-6-0,compute-6-4,compute-6-1,compute-6-3
 
 # Load Anaconda environment
@@ -14,19 +14,19 @@ source /home/tsatler/anaconda3/etc/profile.d/conda.sh
 ########################
 
 # Define input parameters for RFdocking
-num_of_diffusions=20 # Number of RF diffusions per script
-total_mpnn=200
-mpnn_per_design=20 # Filtered mpnn sequences for AF2
+num_of_diffusions=30 # Number of RF diffusions per script
+total_mpnn=100
+mpnn_per_design=10 # Filtered mpnn sequences for AF2
 num_recycles=12
 sampling_temp=0.2 # ProteinMPNN sampling temperature
 
-prefix="cd5_lcb3_binder_v2"
+prefix="cd5_helix_frag"
 target_pdb="../../targets/cd5/inputs/2ja4.pdb"
 output="../../targets/cd5/outputs/fold_docking"
 hotspots='ppi.hotspot_res=[A288,A290,A298,A299,A328,A330,A362,A364]'
 #scaff_dir="../../scaffolds/rfdiff_filtered_scaffolds"
-scaff_dir="../../testing/testing_scaffolds/lcb3"
-
+#scaff_dir="../../testing/testing_scaffolds/lcb3"
+scaff_dir="../../scaffolds/helix_seed_scaffolds"
 ########################
 # RF diffusion
 ########################
@@ -104,6 +104,7 @@ for ((i=0; i<${#input_files[@]}; i++)); do
   pdb_file=${input_files[$i]}
   echo $pdb_file AF2 design
   af_out=$output/mpnn_af2/${prefix}_${SLURM_ARRAY_TASK_ID}
+  output="/home/tsatler/RFdif/ClusterProteinDesign/testing/helix_extraction"
   python ../helper_scripts/colabinder.py $pdb_file $af_out B A --sampling_temp $sampling_temp --num_recycles $num_recycles --num_seqs $total_mpnn --num_filt_seq $mpnn_per_design --results_dataframe $output --break_design --save_best_only
 done
 

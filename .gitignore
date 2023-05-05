@@ -1,5 +1,7 @@
 scripts/*/slurm*.out
-/scripts/Fold_docking/outputs
+scripts/Fold_docking/outputs
+scripts/Fold_docking/*.sh
+!scripts/Fold_docking/1_fold_docking_example.sh
 testing/
 targets/*
 !targets/example

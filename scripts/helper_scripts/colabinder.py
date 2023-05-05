@@ -16,7 +16,8 @@ parser.add_argument('--num_seqs', type=int, default=1000, help='number of sequen
 parser.add_argument('--num_filt_seq', type=int, default=50, help='number of sequences to keep after filtering (default: 50)')
 parser.add_argument('--sampling_temp', type=float, default=0.15, help='sampling temperature (default: 0.15)')
 parser.add_argument('--results_dataframe', type=str, help='save results')
-parser.add_argument('--break_design', action='store_true', help='stop making new sequences if rmsd < 2 or plddt > 0.85')
+parser.add_argument('--break_design', action='store_true', help='stop making new sequences if rmsd < 2 and plddt > 0.9')
+parser.add_argument('--save_best_only', action='store_true', help='save only the best structures')
 args = parser.parse_args()
 
 pdb = args.pdb
@@ -85,15 +86,19 @@ for n in range(num_filt_seq):
 
 
   current_model=f"{loc}/{pdb_name}_{n}.pdb"
-  af_model.save_current_pdb(f"{current_model}")
-  af_model._save_results(save_best=True, verbose=False)
+  if args.save_best_only:
+    if out["plddt"][n] > 0.8 or out["rmsd"][n] < 2:
+      af_model.save_current_pdb(f"{current_model}")
+    af_model._save_results(save_best=True, verbose=False)
+  else:   
+    af_model.save_current_pdb(f"{current_model}")
+    af_model._save_results(save_best=True, verbose=False)
   af_model._k += 1
   score_line = [f'mpnn:{out["score"][n]:.3f}']
   for t in af_terms:
     score_line.append(f'{t}:{out[t][n]:.3f}')
   print(n, " ".join(score_line)+" "+seq)
   line = f'>{"|".join(score_line)}\n{seq}'
-
 
   if args.break_design:
     if out["plddt"][n] > 0.9 and out["rmsd"][n] < 2:

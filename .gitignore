@@ -1,4 +1,5 @@
 scripts/*/slurm*.out
+/scripts/Fold_docking/outputs
 testing/
 targets/*
 !targets/example

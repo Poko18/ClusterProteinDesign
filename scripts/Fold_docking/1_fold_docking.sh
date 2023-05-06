@@ -3,7 +3,7 @@
 #SBATCH --gres=gpu:A40:1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=2
-#SBATCH --array=1-100%20
+#SBATCH --array=1-200%20
 #SBATCH --exclude=compute-6-2,compute-6-0,compute-6-4,compute-6-1,compute-6-3
 
 # Load Anaconda environment
@@ -20,7 +20,7 @@ mpnn_per_design=20 # Filtered mpnn sequences for AF2
 num_recycles=12
 sampling_temp=0.2 # ProteinMPNN sampling temperature
 
-prefix="cd5_lcb3_binder_v2"
+prefix="cd5_lcb3_binder_v3"
 target_pdb="../../targets/cd5/inputs/2ja4.pdb"
 output="../../targets/cd5/outputs/fold_docking"
 hotspots='ppi.hotspot_res=[A288,A290,A298,A299,A328,A330,A362,A364]'

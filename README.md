@@ -6,6 +6,7 @@ This is a personal repository for running protein design scripts on Slurm. The s
 #### TO DO:
 - [ ] make new scaffolds from NTF fold? and make different ones by masking and adding residues to the ends
 - [ ] write cleaner metric scripts and more of them
+- [ ] implement saving all generated pdbs in one file (silent?)
 
 ### BINDER PIPELINES:
 - [ ] Fold_seeking

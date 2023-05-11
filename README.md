@@ -21,6 +21,6 @@ To use these scripts, one must install several different things:
 ### BINDER PIPELINES:
 - [ ] Fold_seeking
 - [x] Fold_docking
-- [ ] Binder_search
+- [x] Binder_search
 - [ ] Dock_and_search
 - [ ] Binder_building (experimental)

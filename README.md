@@ -17,3 +17,8 @@ To use these scripts, one must install several different things:
     - idea - whole design pipeline --> RFdif with scaffolding, ProteinMPNN, thread (10?) and relax, proteinMPNN newly relaxed backbones, af2 predict, best rmsd / plddt binders --> proteinMPNN (much more), af2 predict and calculate metrics for filtering
 - [ ] write cleaner metric scripts and more of them
 - [ ] implement saving all generated pdbs in one file (silent?)
+
+### Pipelines
+- [ ] BINDER_DESIGN: binder search + filter notebook + final binder with metrics
+- [ ] QUICK_ProteinMPNN: (notebook for fixing/tieing residues) proteinMPNN + AF2 (with/without MSA)
+- [ ] QUICK_AF2_test: folder with pdbs/file with sequences --> AF2 (with/without MSA)(+ESMfold?) --> RMSD to original/ plddt metrics

@@ -7,6 +7,7 @@ To use these scripts, one must install several different things:
 - RFdiffusion
 - ColabDesign
 - PyRosetta/Rosetta
+- ColabFold
 
 ### TO DO:
 - [x] Add proteinMPNN/FastRelax step between Folddocking and ProteinMPNN/AF2 to get better protein backbone

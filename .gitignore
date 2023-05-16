@@ -1,10 +1,5 @@
-scripts/*/slurm*.out
-scripts/Fold_docking/outputs
-scripts/Fold_docking/*.sh
-!scripts/Fold_docking/1_fold_docking_example.sh
-testing/
+scripts/*
+testing/*
 targets/*
-!targets/example
-!targets/README.md
 scaffolds/*
 !scaffolds/*tar.gz

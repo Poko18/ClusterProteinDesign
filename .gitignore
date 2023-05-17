@@ -3,3 +3,4 @@ testing/*
 targets/*
 scaffolds/*
 !scaffolds/*tar.gz
+pipelines/colabfold_af2/output/*

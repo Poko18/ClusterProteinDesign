@@ -19,6 +19,7 @@ To use these scripts, one must install several different things:
 - [ ] write cleaner metric scripts and more of them
 - [ ] implement saving all generated pdbs in one file (silent?)
 - [ ] get sequences for all scaffolds
+- [ ] make metric functions more general and group them in common file
 
 ### Pipelines
 - [ ] BINDER_DESIGN: binder search + filter notebook + final binder with metrics

@@ -3,11 +3,18 @@
 This is a personal repository for running protein design scripts on Slurm. The scripts are designed to use various tools such as RFdiffusion, ProteinMPNN, AlphaFold2, and Rosetta.
 
 ### Usage:
-To use these scripts, one must install several different things:
+To use the scripts from this repository, one must install several different things:
 - RFdiffusion
 - ColabDesign
 - PyRosetta/Rosetta
 - ColabFold
+
+### Pipelines
+- [ColabFold AF2 prediction](/pipelines/colabfold_af2)
+- [Protein design with ProteinMPNN and AF2](/pipelines/mpnn_af2)
+
+
+
 
 ### TO DO:
 - [x] Add proteinMPNN/FastRelax step between Folddocking and ProteinMPNN/AF2 to get better protein backbone
@@ -20,8 +27,6 @@ To use these scripts, one must install several different things:
 - [ ] implement saving all generated pdbs in one file (silent?)
 - [ ] get sequences for all scaffolds
 - [ ] make metric functions more general and group them in common file
-
-### Pipelines
 - [ ] BINDER_DESIGN: binder search + filter notebook + final binder with metrics
 - [ ] QUICK_ProteinMPNN: (notebook for fixing/tieing residues) proteinMPNN + AF2 (with/without MSA)
 - [ ] QUICK_AF2_test: folder with pdbs/file with sequences --> AF2 (with/without MSA)(+ESMfold?) --> RMSD to original/ plddt metrics

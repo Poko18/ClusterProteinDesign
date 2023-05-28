@@ -1,15 +1,26 @@
-# Colabfold script
-Basic script to run AF2 with ColabFold. It saves results in output folder
+# Colabfold scripts
+Basic scripts to run AF2 with ColabFold.
 
+## Predict single fasta/a3m file
 ### Usage
 ``` 
-SBATCH 01_AF2.sh <input_file (fasta,a3m)> <additional_args (--msa-mode single sequence --num-recycle 16)>
+SBATCH predict_single_AF2.sh <input_file (fasta,a3m)> <additional_args (--msa-mode single sequence --num-recycle 16)>
 ``` 
 
 ### Example
 ``` 
-SBATCH 01_AF2.sh examples/3HB.fasta --num-recycle 16
+SBATCH predict_single_AF2.sh examples/3HB.fasta --num-recycle 16
 ``` 
 
-### TO DO
-- [ ] add a script that would parse folder of pdbs, predict and do rmsd (notebook? or both.. so it is not running)
+## Predict pdb files and compare
+Adjust the array range accordingly
+### Usage
+Note: ignore binder args if interaction analysis is not required
+``` 
+sbatch predict_pdbs_AF2.sh <input_file (pdb,folder with pdbs)> <binder args (binder,binder-second)> <additional_args (--msa-mode single sequence --num-recycle 16)>
+``` 
+
+### Example
+``` 
+sbatch predict_pdbs_AF2.sh examples/3HB_folder/ binder-second --num-recycle 16
+``` 

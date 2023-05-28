@@ -3,13 +3,13 @@
 #SBATCH --gres=gpu:A40:1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
-#SBATCH --array=0
+#SBATCH --array=0-2 #range for example 3HB_folder
 
 ### Runs ColabFold on multiple PDB files in a folder
 # Note: Adjust the array range accordingly
 
 # Arguments:
-# 1) Folder containing PDB files
+# 1) PDB file or Folder containing PDB files
 # 2) Specify interaction analysis: "binder" or "binder-second"
 #    (ignore if interaction analysis is not required)
 # 3) Additional ColabFold arguments
@@ -19,11 +19,18 @@
 # Activate the AlphaFold2 environment
 . /home/aljubetic/bin/set_up_AF2.3.sh
 
-input=$1 #input folder
+# Prepare pdb file, fasta file and output folder
+input=$1
+if [ -d $input ]; then
+    # Folder input
+    input_files=($input/*.pdb)
+    file=${input_files[$SLURM_ARRAY_TASK_ID]}
+else
+    # Single file input
+    file=$input
+fi
 
 # Prepare pdb file, fasta file and output folder
-input_files=($input/*.pdb)
-file=${input_files[$SLURM_ARRAY_TASK_ID]}
 base_name="$(basename "$file" | sed 's/\.[^.]*$//')"
 current_path=$(pwd)
 folder_base_name="$(basename "$input" | sed 's/\.[^.]*$//')"

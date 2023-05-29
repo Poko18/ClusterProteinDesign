@@ -10,9 +10,11 @@ To use the scripts from this repository, one must install several different thin
 - ColabFold
 
 ### Pipelines
-[ColabFold AF2 prediction](/pipelines/colabfold_af2)
+[ColabFold AF2 predictions](/pipelines/colabfold_af2)
+
 [Protein design with ProteinMPNN and AF2](/pipelines/mpnn_af2)
 
+[Binder design (WIP)]
 
 #### TO DO:
 - [x] Add proteinMPNN/FastRelax step between Folddocking and ProteinMPNN/AF2 to get better protein backbone
@@ -26,5 +28,5 @@ To use the scripts from this repository, one must install several different thin
 - [ ] get sequences for all scaffolds
 - [ ] make metric functions more general and group them in common file
 - [ ] BINDER_DESIGN: binder search + filter notebook + final binder with metrics
-- [ ] QUICK_ProteinMPNN: (notebook for fixing/tieing residues) proteinMPNN + AF2 (with/without MSA)
-- [ ] QUICK_AF2_test: folder with pdbs/file with sequences --> AF2 (with/without MSA)(+ESMfold?) --> RMSD to original/ plddt metrics
+- [x] QUICK_ProteinMPNN: (notebook for fixing/tieing residues) proteinMPNN + AF2 (with/without MSA)
+- [x] QUICK_AF2_test: folder with pdbs/file with sequences --> AF2 (with/without MSA)(+ESMfold?) --> RMSD to original/ plddt metrics

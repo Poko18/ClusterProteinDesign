@@ -27,6 +27,6 @@ To use the scripts from this repository, one must install several different thin
 - [ ] implement saving all generated pdbs in one file (silent?)
 - [ ] get sequences for all scaffolds
 - [ ] make metric functions more general and group them in common file
-- [ ] BINDER_DESIGN: binder search + filter notebook + final binder with metrics
+- [ ] BINDER_DESIGN: binder search + filter notebook + final binder with metrics, add threading and iterating? Or iterations separate?
 - [x] QUICK_ProteinMPNN: (notebook for fixing/tieing residues) proteinMPNN + AF2 (with/without MSA)
 - [x] QUICK_AF2_test: folder with pdbs/file with sequences --> AF2 (with/without MSA)(+ESMfold?) --> RMSD to original/ plddt metrics

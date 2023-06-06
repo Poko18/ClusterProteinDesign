@@ -1,7 +1,8 @@
 import os,sys
-
+import glob
 from colabdesign.mpnn import mk_mpnn_model
 from colabdesign.af import mk_af_model
+from Bio import PDB
 import pandas as pd
 import numpy as np
 import argparse
@@ -22,6 +23,7 @@ parser.add_argument('--results_dataframe', type=str, help='save results')
 parser.add_argument('--break_design', action='store_true', help='stop making new sequences if rmsd < 2 and plddt > 0.9')
 parser.add_argument('--save_best_only', action='store_true', help='save only the best structures')
 parser.add_argument('--thread_sequence', action='store_true', help='Threads RFdiffusion designs with ProteinMPNN sequence')
+parser.add_argument('--scaffold_folder', type=str, help='Scaffold folder to do rmsd')
 args = parser.parse_args()
 
 # Initialize PyRosetta
@@ -55,6 +57,48 @@ def relax_pose( pose ):
     FastRelax.apply( pose )
     return pose
 
+def get_sequence_from_pdb(pdb_file_path):
+    # Create a PDB parser object
+    parser = PDB.PDBParser()
+    structure = parser.get_structure("pdb_structure", pdb_file_path)
+    model = structure[0]
+    sequence = ""
+
+    # Iterate over all chains in the model
+    for chain in model:
+        # Iterate over all residues in the chain
+        for residue in chain:
+            # Get the residue name (3-letter code)
+            residue_name = residue.get_resname()
+
+            # Ignore non-standard residues
+            if PDB.is_aa(residue_name):
+                # Append the residue name to the sequence
+                sequence += PDB.Polypeptide.three_to_one(residue_name)
+
+    return sequence
+
+def align_structures(pdb1, pdb2, save_aligned=False):
+    """Take two structure and superimpose pdb1 on pdb2"""
+    import Bio.PDB
+
+    pdb_parser = Bio.PDB.PDBParser(QUIET=True)
+    # Get the structures
+    ref_structure = pdb_parser.get_structure("ref", pdb1)
+    sample_structure = pdb_parser.get_structure("sample", pdb2)
+
+    aligner = Bio.PDB.cealign.CEAligner()
+    aligner.set_reference(ref_structure)
+    aligner.align(sample_structure)
+
+    # Save aligned coordinates
+    if save_aligned:
+        io = Bio.PDB.PDBIO()
+        io.set_structure(sample_structure)
+        io.save(pdb2)
+
+    return aligner.rms
+
 pdb = args.pdb
 output_folder = args.output_folder
 target_chains = args.target_chains.split(',')
@@ -64,30 +108,46 @@ num_seqs = args.num_seqs
 num_filt_seq = args.num_filt_seq
 sampling_temp = args.sampling_temp
 results_dataframe = args.results_dataframe
+scaffold_folder = args.scaffold_folder
 
+# Threading and relaxing diffused backbone!
 if args.thread_sequence:
+
+  # make thread folder
+  pdb_name=pdb.split("/")[-1].split(".pdb")[0]
+  pdb_dir_path = os.path.dirname(pdb)
+  thread_dir = os.path.join(pdb_dir_path, "threaded")
+  os.makedirs(thread_dir, exist_ok=True)
+
+  # path to save
+
   print("threading RF design")
   threaded_pose=pose_from_pdb(pdb)
-  mpnn_model = mk_mpnn_model()
-  mpnn_model.prep_inputs(pdb_filename=pdb, chain="A", verbose=False)
-  out = mpnn_model.sample(num=10//10, batch=10,temperature=0.15, verbose=True)
-  score_list = out['score']
-  sorted_index = sorted(range(len(score_list)), key=lambda k: score_list[k], reverse=False) 
-  for key, value in out.items():
-      sorted_value = [value[i] for i in sorted_index][:10] # slice the sorted list to only keep the first x elements
-      out[key] = sorted_value
-  
-  thread_seq = out["seq"][0]
-  #thread_seq = "NDDELHMLMTDLVYEALHFAKDEEIKKRVFQLFELADKAYKNNDRQKLEKVVEELKELLERLLS" #LCB3 seq
-  print(thread_seq)
+
+  if scaffold_folder:
+     scaff_pdb_path=glob.glob(f'{scaffold_folder}/*pdb')[0]
+     thread_seq=get_sequence_from_pdb(scaff_pdb_path)
+  else:
+    mpnn_model = mk_mpnn_model()
+    mpnn_model.prep_inputs(pdb_filename=pdb, chain="A", verbose=False)
+    out = mpnn_model.sample(num=10//10, batch=10,temperature=0.15, verbose=True)
+    score_list = out['score']
+    sorted_index = sorted(range(len(score_list)), key=lambda k: score_list[k], reverse=False) 
+    for key, value in out.items():
+        sorted_value = [value[i] for i in sorted_index][:10] # slice the sorted list to only keep the first x elements
+        out[key] = sorted_value
+    thread_seq = out["seq"][0]
+
   threaded_pose = thread_mpnn_seq(threaded_pose, thread_seq)
   threaded_pose = relax_pose(threaded_pose)
-  pdb_path=pdb.split(".pdb")[0]
-  threaded_pose.dump_pdb(f"{pdb_path}_threaded.pdb")
+
+  thread_dir = os.path.join(pdb_dir_path, "threaded")
+  thread_pdb_name=f"{pdb_name}_threaded.pdb"
+  save_thread=os.path.join(thread_dir, thread_pdb_name)
+  threaded_pose.dump_pdb(save_thread)
   
-  pdb=f"{pdb_path}_threaded.pdb"
+  pdb=save_thread
   print(f"Threaded protein: {pdb}")
-  
 
 
 ### Initialize ###
@@ -125,6 +185,16 @@ for key, value in out.items():
     out[key] = sorted_value
 
 for k in af_terms: out[k] = [] #?
+
+if "model_path" not in out:
+     out["model_path"] = []
+
+if "input_pdb" not in out:
+     out["input_pdb"] = []
+
+if "binder-rmsd" not in out:
+     out["binder-rmsd"] = []
+
 print(out.keys())
 
 pdb_name = pdb.split('/')[-1].split('.pdb')[0]
@@ -144,24 +214,29 @@ for n in range(num_filt_seq):
   if "pae" in out:
     out["pae"][-1] = out["pae"][-1] * 31
 
-
   current_model=f"{loc}/{pdb_name}_{n}.pdb"
+  out["model_path"].append(current_model)
+  out["input_pdb"].append(pdb)
+
+  if scaffold_folder:
+    af_model.save_current_pdb(f"{current_model}")
+    binder_rmsd=align_structures(scaff_pdb_path,current_model)
+    out["binder-rmsd"].append(binder_rmsd)
+    os.remove(current_model)
+  else:
+    out["binder-rmsd"].append(None)
+
   if args.save_best_only:
-    if out["plddt"][n] > 0.8 or out["rmsd"][n] < 2:
+    if out["plddt"][n] > 0.7 or out["rmsd"][n] < 3:
       af_model.save_current_pdb(f"{current_model}")
     af_model._save_results(save_best=True, verbose=False)
   else:   
     af_model.save_current_pdb(f"{current_model}")
     af_model._save_results(save_best=True, verbose=False)
   af_model._k += 1
-  score_line = [f'mpnn:{out["score"][n]:.3f}']
-  for t in af_terms:
-    score_line.append(f'{t}:{out[t][n]:.3f}')
-  print(n, " ".join(score_line)+" "+seq)
-  line = f'>{"|".join(score_line)}\n{seq}'
 
   if args.break_design:
-    if out["plddt"][n] > 0.9 and out["rmsd"][n] < 2:
+    if out["plddt"][n] > 0.9 and out["rmsd"][n] < 1:
       print('Breaking out of loop due to --break_design flag')
       num_filt_seq=n #update the number to save later
       break
@@ -173,12 +248,15 @@ for n in range(num_filt_seq):
 
 model_paths = [f"{loc}/{pdb_name}_{n}.pdb" for n in range(num_filt_seq)]
 
-labels = ["score"] + af_terms + ["seq"] #+ ["model_path"]
+labels = ["score"] + af_terms + ["seq"] + ["model_path"] + ["binder-rmsd"] + ["input_pdb"]
 
-data = [[out[k][n] for k in labels] + [model_paths[n], pdb] for n in range(num_filt_seq)]
+#data = [[out[k][n] for k in labels] + [model_paths[n], pdb] for n in range(num_filt_seq)]
+
+data = [[out[k][n] for k in labels] for n in range(num_filt_seq)]
+
 
 # add additional labels
-labels = ["score"] + af_terms + ["seq"] + ["model_path"] + ["input_pdb"]
+#labels = ["score"] + af_terms + ["seq"] + ["model_path"] + ["input_pdb"]
 labels[0] = "mpnn"
 
 
@@ -203,4 +281,25 @@ else:
         fcntl.flock(f, fcntl.LOCK_EX)  # lock the file for exclusive access
         time.sleep(np.random.uniform(0, 0.05))
         df.to_csv(f, index=False)
+        fcntl.flock(f, fcntl.LOCK_UN)  # release the lock
+
+# Save also the best
+df_best = df[df["rmsd"] < 3]
+
+if results_dataframe:
+   output_path = f'{results_dataframe}/af2_best.csv'
+else:
+   output_path = f'{output_folder}/af2_best.csv'
+
+if os.path.isfile(output_path):
+    with open(output_path, 'a') as f:
+        fcntl.flock(f, fcntl.LOCK_EX)  # lock the file for exclusive access
+        time.sleep(np.random.uniform(0, 0.05))
+        df_best.to_csv(f, header=False, index=False)
+        fcntl.flock(f, fcntl.LOCK_UN)  # release the lock
+else:
+    with open(output_path, 'w') as f:
+        fcntl.flock(f, fcntl.LOCK_EX)  # lock the file for exclusive access
+        time.sleep(np.random.uniform(0, 0.05))
+        df_best.to_csv(f, index=False)
         fcntl.flock(f, fcntl.LOCK_UN)  # release the lock

@@ -4,9 +4,13 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=2
 #SBATCH --mem=50G
+#SBATCH --exclude=compute-0-11
 
 # Load Anaconda environment
 source /home/tsatler/anaconda3/etc/profile.d/conda.sh
+
+target_chain="A"
+binder_chain="B"
 
 input=$1
 input_pdbs=($input/*.pdb)
@@ -31,6 +35,6 @@ echo "Running binder optimization"
 conda activate colabthread
 
 python helper_scripts/binder_opt.py $pdb $output \
-    A B $iterations --initial_proteinmpnns $initial_proteinmpnns --designs_per_iteration $designs_per_iteration\
+    $target_chain $binder_chain $iterations --initial_proteinmpnns $initial_proteinmpnns --designs_per_iteration $designs_per_iteration\
     --proteinmpnn_per_input $mpnn_per_design --sort_by $sort \
     --num_recycles $num_recycles --sampling_temp $sampling_temp

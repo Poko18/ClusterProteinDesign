@@ -25,7 +25,7 @@ parser.add_argument('--proteinmpnn_per_input', type=int, default=4, help='protei
 parser.add_argument('--sort_by', type=str, default="i_pae", help='score to sort during iteration (default: i_pae)')
 parser.add_argument('--num_recycles', type=int, default=12, help='number of af2 cycles (default: 12)')
 parser.add_argument('--sampling_temp', type=float, default=0.15, help='sampling temperature (default: 0.15)')
-parser.add_argument('--mpnn_batch', type=int, default=10, help='proteinMPNN batch (default: 10)')
+parser.add_argument('--mpnn_batch', type=int, default=5, help='proteinMPNN batch (default: 5)')
 args = parser.parse_args()
 
 # Initialize PyRosetta
@@ -63,30 +63,22 @@ def save_to_csv(df,output_path):
           df.to_csv(f, index=False)
           fcntl.flock(f, fcntl.LOCK_UN)  # release the lock
 
-def analyze_and_plot_iterations(iterations, iteration_folder, columns=None, save_path=None):
+def create_dataframe(iterations, pdb_output):
     result = []
     labels = ["iterations"]
+    iteration_folder = pdb_output
+    existing_keys = set()  # Keep track of keys already added to labels
 
-    num_plots = len(columns)
-    num_cols = 2  # Number of columns in the grid
-    num_rows = 1
-
-    fig, axs = plt.subplots(num_rows, num_cols, figsize=(12, 6))
-
-    # Flatten the axs array if necessary
-    if num_rows > 1:
-        axs = axs.flatten()
-    else:
-        axs = [axs]
-
-    # Define custom colors for each plot
-    colors = ['red',  'blue', 'orange', 'purple']
-
-    for iteration in range(1, iterations+1):
+    for iteration in range(1, iterations + 1):
         try:
             data = pd.read_csv(f"{iteration_folder}/it_{iteration}.csv")
             keys = data.head(10).describe().keys().tolist()
-            labels += keys
+
+            # Add keys to labels if they are not already present
+            for key in keys:
+                if key not in existing_keys:
+                    labels.append(key)
+                    existing_keys.add(key)
 
             row = [iteration]
             for col in keys:
@@ -97,30 +89,44 @@ def analyze_and_plot_iterations(iterations, iteration_folder, columns=None, save
             continue
 
     df = pd.DataFrame(result, columns=labels)
+    return df
 
+def plot_columns(df, columns, save_path=None):
+    # Calculate the number of rows and columns in the grid
+    num_plots = len(columns)
+    num_cols = math.ceil(math.sqrt(num_plots))
+    num_rows = math.ceil(num_plots / num_cols)
+
+    # Create the grid of subplots
+    fig, axes = plt.subplots(num_rows, num_cols, figsize=(12,6))
+    
+    # Flatten the axes array for easier indexing
+    axes = axes.flatten()
+
+    # Plot each specified column against the "iterations" column
     for i, column in enumerate(columns):
-        ax = axs[i]
-        x = df['iterations']
-        y = df[column]
+        ax = axes[i]  # Get the current subplot
+        ax.plot(df['iterations'], df[column], label=column)
 
-        # Plot the data with customizations
-        ax.plot(x, y, color=colors[i], linewidth=2.5)
-        ax.set_xlabel('Iterations', fontsize=14)
-        ax.set_ylabel('Values', fontsize=14)
-        ax.set_title(f'{column} plot', fontsize=16)
+        # Add labels and a legend to each subplot
+        ax.set_xlabel('Iterations')
+        ax.set_ylabel('Value')
+        ax.set_title(column)
+        ax.legend()
 
-        # Increase tick label font size
-        ax.tick_params(axis='both', labelsize=12)
+    # Remove any unused subplots
+    if num_plots < len(axes):
+        for j in range(num_plots, len(axes)):
+            fig.delaxes(axes[j])
 
-    # Set a common title for all subplots
-    fig.suptitle("binder_optimization", fontsize=18)
+    # Adjust the spacing between subplots
     fig.tight_layout()
 
-    # Save the plot if save_path is provided
+    # Save the plot if a save path is provided
     if save_path:
         plt.savefig(save_path)
-        print("saved iteration plot")
-
+    else:
+        plt.show()
 
 #################
 
@@ -135,6 +141,7 @@ os.system(f"mkdir -p {pdb_output}")
 
 af_terms = ["plddt","i_ptm","i_pae","rmsd"]
 other_terms= ["model_path","input_pdb"]
+labels = ["score"] + af_terms + other_terms
 
 af_model = mk_af_model(protocol="binder",
                        initial_guess = True,
@@ -180,7 +187,7 @@ if not os.path.exists(initial_csv):
       af_model._save_results(save_best=True, verbose=False)
       af_model._k += 1
 
-   labels = ["score"] + af_terms + other_terms
+
    iteration_data = [[mpnn_out[k][n] for k in labels] for n in range(initial_proteinmpnns)]
    initial_dataframe=pd.DataFrame(iteration_data, columns=labels)
 
@@ -280,7 +287,8 @@ for i in range(1,iterations+1):
    columns = ['plddt','i_pae']
    try:
       #iterations, iteration_folder, columns=None, save_path=None
-      analyze_and_plot_iterations(iterations, pdb_output, columns, f"{pdb_output}/iteration_plot.png")
+      df_plot=create_dataframe(iterations,pdb_output)
+      plot_columns(df_plot, columns, save_path=f"{pdb_output}/iteration_plot.png")
    except:
       print("could not plot")
    print(f"finished iteration in {time.time()-t_it} seconds")

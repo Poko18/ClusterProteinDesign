@@ -3,7 +3,7 @@
 #SBATCH --gres=gpu:A40:1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
-#SBATCH --array=0-2 #range for example 3HB_folder
+#SBATCH --array=0
 
 ### Runs ColabFold on multiple PDB files in a folder
 # Note: Adjust the array range accordingly
@@ -14,13 +14,14 @@
 #    (ignore if interaction analysis is not required)
 # 3) Additional ColabFold arguments
 
-# Example command: sbatch AF2_pdb_prediciton.sh examples/3HB_folder/ binder-second --num-recycle 16
+# Example command: sbatch predict_pdbs_AF2.sh examples/3HB_folder/ binder-second --num-recycle 16
 
 # Activate the AlphaFold2 environment
 . /home/aljubetic/bin/set_up_AF2.3.sh
 
+input=$1 #input folder
+
 # Prepare pdb file, fasta file and output folder
-input=$1
 if [ -d $input ]; then
     # Folder input
     input_files=($input/*.pdb)
@@ -69,8 +70,10 @@ echo $CMD
 $CMD
 
 # Copy the best-ranked PDB and JSON files to the output directory
+ref_pdb=$current_path/output/$folder_base_name/$base_name-ref.pdb
 final_pdb=$current_path/output/$folder_base_name/$base_name-AF2.pdb
 final_json=$current_path/output/$folder_base_name/$base_name-AF2.json
+cp $file $ref_pdb
 cp $out_dir/$base_name*rank_001*.pdb $final_pdb
 cp $out_dir/$base_name*rank_001*.json $final_json
 

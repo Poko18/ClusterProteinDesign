@@ -6,14 +6,17 @@ import sys
 import fcntl
 import time
 import numpy as np
+from pyrosetta.rosetta import *
 from pyrosetta import init, pose_from_pdb
 from pyrosetta.rosetta.protocols.rosetta_scripts import XmlObjects
-from pyrosetta.rosetta.protocols.relax import FastRelax
 from pyrosetta.rosetta.protocols import *
 from Bio.PDB import *
 from Bio.PDB.Polypeptide import aa1, aa3
 from Bio.SeqUtils.ProtParam import ProteinAnalysis
 
+from pyrosetta import *
+init()
+#init("-beta_nov16 -holes:dalphaball")
 
 parser = argparse.ArgumentParser(description='Binder analysis')
 
@@ -50,8 +53,6 @@ with open(output_df, 'r') as f:
 
 print(f"Input PDB is in metrics dataframe!")
 
-from pyrosetta import * 
-init()
 
 
 ### Functions ###
@@ -188,6 +189,20 @@ def calculate_rg(chain):
 
     return Rg
 
+def interface_terms(pdb):
+    # Returns:
+    # - The dG (delta G) energy value of the interface
+    # - The dSASA (delta Solvent Accessible Surface Area) value of the interface
+    # - The dG_dSASA_ratio (delta G to delta SASA ratio) multiplied by 100
+    # - The number of delta unsatisfied hydrogen bonds at the interface
+    # - The number of hydrogen bonds formed at the interface
+
+    pose=pose_from_pdb(pdb)
+    interface_analyzer = protocols.analysis.InterfaceAnalyzerMover()
+    interface_analyzer.apply(pose)
+    data=interface_analyzer.get_all_data()
+    return data.dG[1], data.dSASA[1], (data.dG_dSASA_ratio*100), data.delta_unsat_hbonds, data.interface_hbonds
+
 ##################
 
 ### Metric calculations ###
@@ -198,14 +213,16 @@ parser = PDBParser()
 structure = parser.get_structure('protein', pdb)
 chain = structure[0][binder_chain]
 
+# TO DO: call functions in dict, based on metric_columns defined
+
 rg = calculate_rg(chain)
 charge = calculate_charge(chain, ph=7.4)
 sap = calculate_sap_score(pose, binder_chain)
 ddg = calculate_ddg(pose, partners=f"{binder_chain}_{''.join(target_chain.split(','))}")
-
+dG, dSASA, dG_dSASA_ratio, int_unsat_hbonds, int_hbonds = interface_terms(pdb)
 ##################
 
-metric_columns = ['ddg', 'rg', 'charge', 'sap']
+metric_columns = ['ddg', 'rg', 'charge', 'sap', 'dG', 'dSASA', 'dG_dSASA_ratio', 'int_unsat_hbonds', 'int_hbonds']
 
 # Write the data to the file, acquiring a lock if necessary
 with open(output_df, 'r+') as f:
@@ -219,7 +236,7 @@ with open(output_df, 'r+') as f:
         if column not in df.columns:
             df[column] = None
     
-    df.loc[df['model_path'] == input_pdb, ['ddg', 'rg', 'charge', 'sap']] = [ddg, rg, charge, sap]
+    df.loc[df['model_path'] == input_pdb, metric_columns] = [ddg, rg, charge, sap, dG, dSASA, dG_dSASA_ratio, int_unsat_hbonds, int_hbonds]
 
     # Save the DataFrame back to the CSV file
     df.to_csv(output_df, index=False)

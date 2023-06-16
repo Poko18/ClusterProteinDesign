@@ -198,7 +198,7 @@ def interface_terms(pdb):
     # - The number of hydrogen bonds formed at the interface
 
     pose=pose_from_pdb(pdb)
-    interface_analyzer = protocols.analysis.InterfaceAnalyzerMover()
+    interface_analyzer = analysis.InterfaceAnalyzerMover()
     interface_analyzer.apply(pose)
     data=interface_analyzer.get_all_data()
     return data.dG[1], data.dSASA[1], (data.dG_dSASA_ratio*100), data.delta_unsat_hbonds, data.interface_hbonds

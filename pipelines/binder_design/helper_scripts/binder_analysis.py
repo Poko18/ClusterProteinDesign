@@ -14,9 +14,15 @@ from Bio.PDB import *
 from Bio.PDB.Polypeptide import aa1, aa3
 from Bio.SeqUtils.ProtParam import ProteinAnalysis
 
+os.getcwd()
+
 from pyrosetta import *
 init()
+from pyrosetta.rosetta import *
+init("-beta_nov16 -holes:dalphaball")
 #init("-beta_nov16 -holes:dalphaball")
+
+
 
 parser = argparse.ArgumentParser(description='Binder analysis')
 
@@ -25,6 +31,7 @@ parser.add_argument('target_chain', type=str, help='name of target chain (C,D..)
 parser.add_argument('binder_chain', type=str, help='name of binder chain (C,D..)')
 #parser.add_argument('partners', default="B_C", type=str, help='Partners to unbind, separated by "_". Example: "A_B"')
 parser.add_argument('output_df', type=str, help='Output csv file for adding metrics')
+parser.add_argument('xml_file', type=str, help='Path to rosetta XML file')
 
 args = parser.parse_args()
 input_pdb = args.input_pdb
@@ -32,6 +39,9 @@ target_chain = args.target_chain
 binder_chain = args.binder_chain
 #partners = args.partners
 output_df = args.output_df
+
+xml = args.xml_file
+objs = protocols.rosetta_scripts.XmlObjects.create_from_file( xml )
 
 # Check if output_df is a file
 if not os.path.isfile(output_df):
@@ -76,13 +86,14 @@ def unbind(pose, partners):
     trans_mover.step_size(STEP_SIZE)
     trans_mover.apply(pose)
 
-def calculate_ddg(pose, partners, scorefxn=get_fa_scorefxn()):
+def calculate_ddg(pose, partners, scorefxn=get_fa_scorefxn(), relax=True):
     # Load the PDB file as a PyRosetta Pose
     start_pose = pose_from_file(f'{input_pdb}')
     pose = start_pose.clone()
 
     # Relax the pose
-    fast_relax_pdb(pose=pose)
+    if relax:
+        relax_pose(pose)
 
     #Save the relaxed structure
     relaxPose = pose.clone()
@@ -203,6 +214,37 @@ def interface_terms(pdb):
     data=interface_analyzer.get_all_data()
     return data.dG[1], data.dSASA[1], (data.dG_dSASA_ratio*100), data.delta_unsat_hbonds, data.interface_hbonds
 
+def relax_pose( pose, binder_chain="A" ):
+    if binder_chain=="A":
+        FastRelax = objs.get_mover( 'FastRelax' )
+        FastRelax.apply( pose )
+    elif binder_chain=="B":
+        FastRelax = objs.get_mover( 'FastRelax_ChainB_bbtrue' )
+        FastRelax.apply( pose )
+    return pose
+
+def get_ddg(pose, relax=True):
+    if relax:
+        relax_pose(pose)
+    ddg=objs.get_filter("ddg")
+    ddg.apply(pose)
+    return ddg.score(pose)
+
+def shape_complementarity(pose):
+    shape_comp=objs.get_filter("interface_sc")
+    shape_comp.apply(pose)
+    return shape_comp.score(pose)
+
+def interface_buried_sasa(pose):
+    dsasa=objs.get_filter("interface_buried_sasa")
+    dsasa.apply(pose)
+    return dsasa.score(pose)
+
+def hydrophobic_residue_contacts(pose):
+    hyd_res=objs.get_filter("hydrophobic_residue_contacts")
+    hyd_res.apply(pose)
+    return hyd_res.score(pose)
+
 ##################
 
 ### Metric calculations ###
@@ -218,11 +260,18 @@ chain = structure[0][binder_chain]
 rg = calculate_rg(chain)
 charge = calculate_charge(chain, ph=7.4)
 sap = calculate_sap_score(pose, binder_chain)
-ddg = calculate_ddg(pose, partners=f"{binder_chain}_{''.join(target_chain.split(','))}")
 dG, dSASA, dG_dSASA_ratio, int_unsat_hbonds, int_hbonds = interface_terms(pdb)
-##################
+hyd_con = hydrophobic_residue_contacts(pose)
+shape_comp = shape_complementarity(pose)
+interface_sasa = interface_buried_sasa(pose)
+rpose=relax_pose(pose, binder_chain)
+ddg = calculate_ddg(rpose, partners=f"{binder_chain}_{''.join(target_chain.split(','))}",relax=False)
+ddg_score = get_ddg(rpose, relax=False)
+ddg_dsasa_100 = (ddg/interface_sasa)*100
+ddgscore_dsasa_100 = (ddg_score/interface_sasa)*100
+################## ddg_dsasa_100 , ddgscore_dsasa_100
 
-metric_columns = ['ddg', 'rg', 'charge', 'sap', 'dG', 'dSASA', 'dG_dSASA_ratio', 'int_unsat_hbonds', 'int_hbonds']
+metric_columns = ['ddg', 'rg', 'charge', 'sap', 'dG', 'dSASA', 'dG_dSASA_ratio', 'int_unsat_hbonds', 'int_hbonds', 'hyd_contacts' , 'shape_comp' , 'ddg_score', 'ddg_dsasa_100' , 'ddgscore_dsasa_100']
 
 # Write the data to the file, acquiring a lock if necessary
 with open(output_df, 'r+') as f:
@@ -236,7 +285,7 @@ with open(output_df, 'r+') as f:
         if column not in df.columns:
             df[column] = None
     
-    df.loc[df['model_path'] == input_pdb, metric_columns] = [ddg, rg, charge, sap, dG, dSASA, dG_dSASA_ratio, int_unsat_hbonds, int_hbonds]
+    df.loc[df['model_path'] == input_pdb, metric_columns] = [ddg, rg, charge, sap, dG, interface_sasa, dG_dSASA_ratio, int_unsat_hbonds, int_hbonds, hyd_con , shape_comp , ddg_score, ddg_dsasa_100 , ddgscore_dsasa_100]
 
     # Save the DataFrame back to the CSV file
     df.to_csv(output_df, index=False)

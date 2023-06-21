@@ -13,6 +13,7 @@ pdb=${input_pdbs[$SLURM_ARRAY_TASK_ID]}
 target_chain=$2
 binder_chain=$3
 out_file=$4
+xml_file=$5
 
 ########################
 # Binder optimization
@@ -21,4 +22,4 @@ echo "Running binder analysis"
 
 conda activate colabthread
 
-python helper_scripts/binder_analysis.py $pdb $target_chain $binder_chain $out_file
+python helper_scripts/binder_analysis.py $pdb $target_chain $binder_chain $out_file $xml_file

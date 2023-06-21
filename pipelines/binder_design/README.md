@@ -71,11 +71,12 @@ sbatch --output=/dev/null --array=0-{array_number-1}%{array_limit} helper_script
 The idea of `03_binder_analysis.ipynb` notebook is to filter optimized sequences and calculate additional metrics, that would help use discriminate good binders from the bad ones. The notebook divides datasets into smaller chunks of 1000 and subsequently executes them individually on a cluster.
 
 Final command:
-"""
+```
 sbatch --output=/dev/null --array=0-{array_number-1}%{array_limit} helper_scripts/binder_analysis.sh {input_file} {target_chain} {binder_chain} {metric_path}
-"""
+```
 
 - `input_file` - list of proteins to calculate metrics for (1000 per array job)
 - `target_chain` - target chain
 - `binder_chain` - binder chain
 - `metric_path` - file for writing results (prepared with notebook)
+- `xml_file` - rosetta xml file

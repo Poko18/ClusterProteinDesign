@@ -14,7 +14,7 @@ To use the scripts from this repository, one must install several different thin
 ### Pipelines
 - [ColabFold AF2 predictions](/pipelines/colabfold_af2)
     - [Predict single fasta/a3m file](/pipelines/colabfold_af2/README.md#Predict-single-fasta/a3m-file)
-    - [Predict pdb files and compare](/pipelines/colabfold_af2)
+    - [Predict pdb files and compare](/pipelines/colabfold_af2/#Predict-pdb-files-and-compare)
 - [Protein design with ProteinMPNN and AF2](/pipelines/mpnn_af2)
     - MPNN-AF2 pipeline:
         - [ProteinMPNN](/pipelines/mpnn_af2)

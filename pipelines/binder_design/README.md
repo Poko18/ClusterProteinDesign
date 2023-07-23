@@ -80,3 +80,6 @@ sbatch --output=/dev/null --array=0-{array_number-1}%{array_limit} helper_script
 - `binder_chain` - binder chain
 - `metric_path` - file for writing results (prepared with notebook)
 - `xml_file` - rosetta xml file
+
+## Round 4 - binder filtering and sequence clustering
+The idea of `04_binder_filter.ipynb` notebook is to filter binders by different metrics, predict them again with AF2 and RF2 (and ESMfold), cluster similar sequences together and group final results

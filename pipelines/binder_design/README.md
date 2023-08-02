@@ -1,6 +1,8 @@
 # Binder design
 Binder design pipelines. Mostly still work in process..
 
+![binders](imgs/binder_design.png)
+
 ## Round 1 - binder scaffold docking
 Idea is to get get initial binder sequence, that binds to the target protein. 
 If you dont care about where binders bind or want to explore prefered binding spots, start with `01a_binder_random_dock.ipynb`.
@@ -82,4 +84,10 @@ sbatch --output=/dev/null --array=0-{array_number-1}%{array_limit} helper_script
 - `xml_file` - rosetta xml file
 
 ## Round 4 - binder filtering and sequence clustering
-The idea of `04_binder_filter.ipynb` notebook is to filter binders by different metrics, predict them again with AF2 and RF2 (and ESMfold), cluster similar sequences together and group final results
+The idea of `04_binder_filter.ipynb` notebook is to filter binders by different metrics, predict them again with AF2 and RF2 (and ESMfold), cluster similar sequences together and group final results.
+
+Workflow:
+- filter sequences based on the metrics from `03_binder_analysis.notebook` (i_pae, ddg_dsasa_100, charge, hyd_contacts, shape_comp, ...)
+- validate sequences again with different prediciton methods (AlphaFold2, RoseTTAfold2, ESMfold)
+- second round of filtering, based on validation results (af2_plddt, af2_pae, af2_rmsd, ...)
+- clustering similar sequences together and prepare final binder sequences to order

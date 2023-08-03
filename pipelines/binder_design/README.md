@@ -89,5 +89,13 @@ The idea of `04_binder_filter.ipynb` notebook is to filter binders by different 
 Workflow:
 - filter sequences based on the metrics from `03_binder_analysis.notebook` (i_pae, ddg_dsasa_100, charge, hyd_contacts, shape_comp, ...)
 - validate sequences again with different prediciton methods (AlphaFold2, RoseTTAfold2, ESMfold)
+```
+sbatch --output=/dev/null --array=0-{array_number-1}%{array_limit} helper_scripts/predict_binders.sh {msa_folder} {output_path} {binder_analysis} {prediction_tools}
+```
+`msa_folder` - folder with input msa files \
+`output_path` - output folder \
+`binder_analysis` - flags for binder analysis (define if you want binder analysis and the position of binder - binder or binder-second) \
+`prediction_tools` - prediction tools to use (colabfold, rosettafold2 or/and ...)
+
 - second round of filtering, based on validation results (af2_plddt, af2_pae, af2_rmsd, ...)
 - clustering similar sequences together and prepare final binder sequences to order

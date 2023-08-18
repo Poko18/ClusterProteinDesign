@@ -8,8 +8,8 @@ Idea is to get get initial binder sequence, that binds to the target protein.
 If you dont care about where binders bind or want to explore prefered binding spots, start with `01a_binder_random_dock.ipynb`.
 If you want to target specific residues, start with start with `01b_binder_dock.ipynb` for docking scaffolds (usually 3HB) or `01c_binder_dock.ipynb` for docking random scaffolds.
 
-### 1a Random binder docking
-In the `01a_binder_random_dock.ipynb` notebook, main thing you need to do is to change parameters, especailly path to `target_pdb`, `target_chain` and setup number of `iterations`.
+### 1a Random binder location docking
+In the `01a_binder_random_location_dock.ipynb` notebook, main thing you need to do is to change parameters, especailly path to `target_pdb`, `target_chain` and setup number of `iterations`.
 
 Final command will look somewhat like this:  
 ```
@@ -28,7 +28,7 @@ sbatch --output=/dev/null --array=0-{scaf_num-1}%{array_lim} helper_scripts/pred
 
 
 ### 1b RFdiffusion selected scaffold docking
-In the `01b_binder_dock.ipynb` notebook, you need to setup `target_pdb` path and target protein`hotspots`, specify `scaffold_dir` (with/without backbone threading before ProteinMPNN) and a number of dockings (`num_of_diffusions`) to perform for each scaffold.
+In the `01b_binder_scaffold_dock.ipynb` notebook, you need to setup `target_pdb` path and target protein`hotspots`, specify `scaffold_dir` (with/without backbone threading before ProteinMPNN) and a number of dockings (`num_of_diffusions`) to perform for each scaffold.
 
 Final command:
 ```
@@ -47,8 +47,25 @@ sbatch --output=/dev/null --array=1-{array_number}%{array_limit} helper_scripts/
 > **Note:** If the Scaffold directory contains multiple subdirectories, the script will run each directory separately.
 
 
-### 1c RFdiffusion random scaffold docking
-WIP
+### 1c RFdiffusion random binder scaffold docking
+In the `01c_random_binder_scaffold_dock.ipynb` notebook, you need to setup `target_pdb` path and target protein`hotspots`, number of dockings (`num_of_diffusions`) to perform for each scaffold, along with other MPNN/AF2 parameters.
+Make sure to setup config file for binder prediction, specifying desired size.
+
+Final command:
+```
+sbatch --output=/dev/null --array=0-{array_number-1}%{array_limit} helper_scripts/binder_dock_random_scaff.sh {num_of_diffusions} {total_mpnn} {mpnn_per_design} {num_recycles} {sampling_temp} {prefix} {target_pdb} {hotspots} {contigs} {thread_binders}
+```
+
+- `num_of_diffusions` - number of dockings to perform
+- `total_mpnn` - total number of sequences for per design
+- `mpnn_per_design` - total number of sequences to sample per design (filter from `total_mpnn`)
+- `num_recycles` - number of AF2 recycles (default: 12)
+- `sampling_temp` - ProteinMPNN sampling temperature (default: 0.15)
+- `prefix` - input name
+- `target_pdb` - path to target pdb
+- `hotspots` - hotspot residues to target with binder (usually around 5)
+- `contigs` - RFdiffusion contigs for binder generation
+- `thread_binders` - select if you want to thread binder scaffold with sequence and FastRelax before designing
 
 ## Round 2 - binder optimization
 The idea of `02_binder_optimization.ipynb` notebook to get primary binders and optimize them with iterations of AF2 and ProteinMPNN, sorting by i_pae or some custom scoring function. Filter the binders and for each binder run an optimization script. Make sure to specify number of `iterations` and a way to `sort`.

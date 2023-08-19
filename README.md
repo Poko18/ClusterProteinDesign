@@ -28,4 +28,4 @@ To use the scripts from this repository, one must install several different thin
             - [RFdiffusion random binder scaffold docking](/pipelines/binder_design#1c-RFdiffusion-random-binder-scaffold-docking)
         - [Binder optimization](/pipelines/binder_design#Round-2---binder-optimization)
         - [Binder analysis](/pipelines/binder_design#Round-3---binder-analysis)
-        - [Binder filter best (WIP)]()
+        - [Binder filtering](/pipelines/binder_design#Round-4---binder-filtering-and-sequence-clustering)

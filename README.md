@@ -1,15 +1,30 @@
 # ClusterProteinDesign
 
-This is a personal repository for running protein design scripts on Slurm. The scripts are designed to use various tools such as RFdiffusion, ProteinMPNN, AlphaFold2, and Rosetta.
+This is a personal repository for running protein design scripts on Slurm. The scripts are designed to use various tools such as RFdiffusion, ProteinMPNN, AlphaFold2, Rosetta, etc..
 
 ### Usage:
 To use the scripts from this repository, one must install several different things:
-- RFdiffusion
-- ColabDesign
+- [RFdiffusion](https://github.com/RosettaCommons/RFdiffusion)
+- [ColabDesign](https://github.com/sokrypton/ColabDesign)
+
+What worked for me was installing cuda before colabdesign:
+
+```
+conda create -n colabdesign python=3.9 pip
+conda activate colabdesign
+pip install --upgrade "jax[cuda11_pip]" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
+pip -q install git+https://github.com/sokrypton/ColabDesign.git@v1.1.1
+
+#Downgrade to match cluster version of cuda
+pip install nvidia-cuda-nvcc-cu11==11.7.99
+pip install nvidia-cuda-runtime-cu11==11.7.99
+```
+
 - PyRosetta/Rosetta
-- ColabFold
-- RoseTTAfold 2
-- ESMfold
+- [ColabFold](https://github.com/sokrypton/ColabFold/tree/main)
+- [RoseTTAfold2](https://github.com/Poko18/RoseTTAFold2)
+> **Note:** I linked my fork that has some additional scripts
+- [ESMfold](https://github.com/facebookresearch/esm)
 
 ### Pipelines
 - [ColabFold AF2 predictions](/pipelines/colabfold_af2)
@@ -29,3 +44,11 @@ To use the scripts from this repository, one must install several different thin
         - [Binder optimization](/pipelines/binder_design#Round-2---binder-optimization)
         - [Binder analysis](/pipelines/binder_design#Round-3---binder-analysis)
         - [Binder filtering](/pipelines/binder_design#Round-4---binder-filtering-and-sequence-clustering)
+
+### TO DO
+- binder design:
+    - quick binder preview in notebooks
+    - when generating random scaffolds, show SS statistics (PCA, clustering, ...)
+- RoseTTAfold2 (compatible with colabfold)
+- ESMfold?
+- write some installations

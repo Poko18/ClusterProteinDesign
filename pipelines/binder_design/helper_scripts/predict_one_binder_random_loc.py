@@ -296,7 +296,7 @@ af_model = mk_af_model(protocol="binder",
                        use_multimer = True,
                        data_dir="/home/tsatler/projects/AFdesign_playground",
                        model_names = ["model_1_multimer_v3"])
-mpnn_model = mk_mpnn_model()
+mpnn_model = mk_mpnn_model(weights="soluble")
 
 # Start iterations
 for i in range(1,iterations+1):

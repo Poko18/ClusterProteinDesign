@@ -128,7 +128,7 @@ if args.thread_sequence:
      scaff_pdb_path=glob.glob(f'{scaffold_folder}/*pdb')[0]
      thread_seq=get_sequence_from_pdb(scaff_pdb_path)
   else:
-    mpnn_model = mk_mpnn_model()
+    mpnn_model = mk_mpnn_model(weights="soluble")
     mpnn_model.prep_inputs(pdb_filename=pdb, chain="A", verbose=False)
     out = mpnn_model.sample(num=10//10, batch=10,temperature=0.15, verbose=True)
     score_list = out['score']

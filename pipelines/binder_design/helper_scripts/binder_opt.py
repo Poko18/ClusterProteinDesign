@@ -149,7 +149,7 @@ af_model = mk_af_model(protocol="binder",
                        use_multimer = True,
                        data_dir="/home/tsatler/projects/AFdesign_playground",
                        model_names = ["model_1_multimer_v3"])
-mpnn_model = mk_mpnn_model()
+mpnn_model = mk_mpnn_model(weights="soluble")
 
 
 # Run initial mpnn/af2

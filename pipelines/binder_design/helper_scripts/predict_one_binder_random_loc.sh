@@ -25,8 +25,9 @@ designs_per_iteration=$6
 mpnn_per_design=$7
 num_recycles=$8
 sampling_temp=$9 # ProteinMPNN sampling temperature
+mpnn_batch=$10
 
 
 python helper_scripts/predict_one_binder_random_loc.py $target_pdb $target_chain $scaff_pdb \
         $output $iterations --designs_per_iteration $designs_per_iteration --proteinmpnn_per_input $mpnn_per_design \
-        --num_recycles $num_recycles --sampling_temp $sampling_temp
+        --num_recycles $num_recycles --sampling_temp $sampling_temp --mpnn_batch $mpnn_batch

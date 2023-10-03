@@ -26,6 +26,7 @@ sbatch --output=/dev/null --array=0-{scaf_num-1}%{array_lim} helper_scripts/pred
 - `recycles` - number of AF2 recycles (default: 12)
 - `sampling_temp` - ProteinMPNN sampling temperature (default: 0.15)
 
+> **Note:** Continue with `015b_binder_random_dock_analysis.ipynb` notebook, to quickly get best pdbs for visual inspection
 
 ### 1b RFdiffusion selected scaffold docking
 In the `01b_binder_scaffold_dock.ipynb` notebook, you need to setup `target_pdb` path and target protein`hotspots`, specify `scaffold_dir` (with/without backbone threading before ProteinMPNN) and a number of dockings (`num_of_diffusions`) to perform for each scaffold.

@@ -35,6 +35,10 @@ pip install nvidia-cuda-runtime-cu11==11.7.99
         - [ProteinMPNN](/pipelines/mpnn_af2#1.-ProteinMPNN)
         - [AF2 prediction (ColabFold)](/pipelines/mpnn_af2#2.-AF2-prediction-(ColabFold))
         - [Structure analysis](/pipelines/mpnn_af2#3.-Basic-analysis-of-predicted-structures)
+
+    - [Fix conserved positions MPNN-AF2 pipeline](/pipelines/msa_mpnn_af2):
+        - based on article: [Sumida2024 - Improving Protein Expression, Stability, and Function with ProteinMPNN](https://doi.org/10.1021/jacs.3c10941)
+
 - [Binder design with RFdiffusion, ProteinMPNN and AF2](/pipelines/binder_design)
     - RF-MPNN-AF2 pipeline:
         - [Binder docking](/pipelines/binder_design#Round-1---binder-scaffold-docking):
@@ -45,10 +49,3 @@ pip install nvidia-cuda-runtime-cu11==11.7.99
         - [Binder analysis](/pipelines/binder_design#Round-3---binder-analysis)
         - [Binder filtering](/pipelines/binder_design#Round-4---binder-filtering-and-sequence-clustering)
 
-### TO DO
-- binder design:
-    - quick binder preview in notebooks
-    - when generating random scaffolds, show SS statistics (PCA, clustering, ...)
-- RoseTTAfold2 (compatible with colabfold)
-- ESMfold?
-- write some installations

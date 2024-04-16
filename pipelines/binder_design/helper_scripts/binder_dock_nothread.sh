@@ -22,10 +22,12 @@ sampling_temp=$5 # ProteinMPNN sampling temperature
 scaff_string=$6 #python list as a string
 IFS=',' read -r -a scaff_list <<< "$scaff_string" #convert string into a list
 echo $scaff_string
+
 prefix=$7
 target_pdb=$8
 output="output/$prefix" # output gets created by rfdiffusion
 hotspots=$9
+echo $hotspots
 for scaff_dir in "${scaff_list[@]}"
 do
   subfolder_name=$(basename "$scaff_dir")
@@ -81,7 +83,7 @@ do
   denoiser.noise_scale_frame=0
 
   #"type:binder_distance_ReLU",
-
+  
   # Remove some files
   current_dir=$(pwd)
   #if [ -d "$current_dir/outputs" ]; then
@@ -95,7 +97,8 @@ do
   if [ -d "$output/rf_dock/${prefix}_${subfolder_name}_${SLURM_ARRAY_TASK_ID}/traj" ]; then
       rm -r "$output/rf_dock/${prefix}_${subfolder_name}_${SLURM_ARRAY_TASK_ID}/traj" # delete trajectories
   fi
-
+  echo "$hotspots" > "$output/hotspots.txt"
+  
   ########################
   # ProteinMPNN and AF2
   ########################
@@ -105,7 +108,7 @@ do
 
   input_files=(${rf_out}*.pdb)
   echo $input_files
-
+  
   # or run another bash script from here.. could be much faster.. but I dont know when it will end and would need to implement something for waiting
 
   if [ -f "colabinder_v2.py" ]; then

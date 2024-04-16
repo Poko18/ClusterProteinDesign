@@ -85,9 +85,11 @@ current_dir=$(pwd)
 #if [ -d "$current_dir/outputs" ]; then
 #    rm -r "$current_dir/outputs" # remove hydra stuff
 #fi
-if [ -e "$rf_out*.trb" ]; then
-    rm "$rf_out*.trb" # delete trb files
-fi
+for file in "$output/rf_dock/${prefix}_${subfolder_name}_${SLURM_ARRAY_TASK_ID}/"*.trb; do
+  if [ -f "$file" ]; then
+    rm "$file"
+  fi
+done
 if [ -d "$output/rf_dock/${prefix}_${subfolder_name}_${SLURM_ARRAY_TASK_ID}/traj" ]; then
     rm -r "$output/rf_dock/${prefix}_${subfolder_name}_${SLURM_ARRAY_TASK_ID}/traj" # delete trajectories
 fi

@@ -65,14 +65,14 @@ echo using prediction tools: $prediction_tools
 
 
 if [[ $prediction_tools == *"colabfold"* ]]; then
-    
+
     # Create AF2 out dir if it doesnt exist
     af2_out_dir=$filtered_binders_path/af2
     if [ ! -d $af2_out_dir ]
     then
         mkdir -p $af2_out_dir
     fi
-    
+
     additional_af2_args="--num_recycles 12"
 
     # Run ColabFold
@@ -87,7 +87,7 @@ if [[ $prediction_tools == *"colabfold"* ]]; then
     ref_pdb=$filtered_binders_path/$basename.pdb
     final_pdb=$filtered_binders_path/$basename-AF2.pdb
     final_json=$filtered_binders_path/$basename-AF2.json
-    
+
     # Copy files analysis
     cp $af2_out_dir/$basename*rank_001*.pdb $final_pdb
     cp $af2_out_dir/$basename*rank_001*.json $final_json
@@ -101,7 +101,7 @@ if [[ $prediction_tools == *"colabfold"* ]]; then
 fi
 
 if [[ $prediction_tools == *"rosettafold2"* ]]; then
-    
+
     #filtered_binders_path_rf2=$filtered_binders_path/msa_inputs_rf2
     # Create AF2 out dir if it doesnt exist
     rf2_out_dir=$filtered_binders_path/rf2
@@ -111,7 +111,7 @@ if [[ $prediction_tools == *"rosettafold2"* ]]; then
     fi
 
     additional_rf2_args="--num_recycles 12"
-    
+
     # Run Rosettafold2
     source /home/tsatler/RFdif/RoseTTAFold2/set_up_RF2.sh
     rf2_path="/home/tsatler/RFdif/RoseTTAFold2"
@@ -134,7 +134,7 @@ if [[ $prediction_tools == *"rosettafold2"* ]]; then
     ref_pdb=$filtered_binders_path/$basename.pdb
     final_pdb=$filtered_binders_path/$basename-RF2.pdb
     final_json=$filtered_binders_path/$basename-RF2.json
-    
+
     # Copy files analysis
     cp $rf2_out_dir/$basename*.pdb $final_pdb
     cp $rf2_out_dir/$basename*.json $final_json

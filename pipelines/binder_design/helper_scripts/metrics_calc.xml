@@ -20,7 +20,7 @@
             <Reweight scoretype="fa_rep" weight="0.55" />
             <Reweight scoretype="fa_sol" weight="1.0" />
         </ScoreFunction>
-        
+
     </SCOREFXNS>
     <RESIDUE_SELECTORS>
         <Chain name="chainA" chains="A"/>
@@ -67,7 +67,7 @@
 
     </RESIDUE_SELECTORS>
 
-    <TASKOPERATIONS>        
+    <TASKOPERATIONS>
         <DesignRestrictions name="layer_design_no_core_polars">
             <Action selector_logic="surface AND helix_start"  aas="DEHKPQR"/>
             <Action selector_logic="surface AND helix"        aas="EHKQR"/>
@@ -138,7 +138,7 @@
 
     </MOVERS>
     <FILTERS>
-        
+
 	<Time name="timed"/>
 
         <Sasa name="interface_buried_sasa" confidence="0" />
@@ -152,7 +152,7 @@
         <ResidueCount name="res_count_MBF" max_residue_count="9999" confidence="0"/>
         <MoveBeforeFilter name="res_count_monomer" mover="chain1only" filter="res_count_MBF" confidence="0" />
 
-           
+
         <CalculatorFilter name="score_per_res" equation="total_score_monomer / res" threshold="-3.5" confidence="0">
             <Var name="total_score_monomer" filter="total_score_monomer"/>
             <Var name="res" filter="res_count_monomer"/>
@@ -162,8 +162,8 @@
 		<BuriedUnsatHbonds name="sbuns" report_all_heavy_atom_unsats="true" scorefxn="sfxn_clean" cutoff="4" residue_surface_cutoff="42.5" ignore_surface_res="false" print_out_info_to_pdb="true" dalphaball_sasa="0" probe_radius="1.1" atomic_depth_selection="5.5" atomic_depth_deeper_than="false" only_interface="false" confidence="0" />
 
         <ContactMolecularSurface name="cms" distance_weight="0.5" use_rosetta_radii="true" apolar_target="0" target_selector="chainA" binder_selector="chainB" confidence="0" />
-        
-        <InterfaceHydrophobicResidueContacts name="hydrophobic_residue_contacts" target_selector="chainB" binder_selector="chainA" scorefxn="sfxn_soft" confidence="0"/> 
+
+        <InterfaceHydrophobicResidueContacts name="hydrophobic_residue_contacts" target_selector="chainB" binder_selector="chainA" scorefxn="sfxn_soft" confidence="0"/>
 
 
         <Ddg name="ddg_hydrophobic_pre"  threshold="-10" jump="1" repeats="1" repack="0" confidence="0" scorefxn="vdw_sol" />

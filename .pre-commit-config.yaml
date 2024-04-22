@@ -12,8 +12,8 @@ repos:
         language_version: python3.12
         args:
           - --line-length=200
-      - id: black-jupyter
-        language_version: python3.12
+    #   - id: black-jupyter
+    #     language_version: python3.12
   - repo: https://github.com/pycqa/isort
     rev: 5.11.5
     hooks:

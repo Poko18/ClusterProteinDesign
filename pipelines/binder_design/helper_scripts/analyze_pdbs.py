@@ -100,34 +100,23 @@ def calculate_scores(scores_path, binder_len=None, is_binder_second=False):
     plddt = np.mean(scores["plddt"])
     pae = np.array(scores["pae"])
 
-    if is_binder_second:
-        pae_binder = np.mean(pae[binder_len:, binder_len:]) if binder_len else None
-        pae_target = np.mean(pae[:binder_len, :binder_len]) if binder_len else None
-        plddt_binder = np.mean(scores["plddt"][binder_len:]) if binder_len else None
-        plddt_target = np.mean(scores["plddt"][:binder_len]) if binder_len else None
-        pae_int1 = np.mean(pae[binder_len:, :binder_len]) if binder_len else None
-        pae_int2 = np.mean(pae[:binder_len, binder_len:]) if binder_len else None
+    if binder_len:
+        plddt_binder = np.mean(scores["plddt"][:binder_len])
+        plddt_target = np.mean(scores["plddt"][binder_len:])
+        pae_binder = np.mean(pae[:binder_len, :binder_len])
+        pae_target = np.mean(pae[binder_len:, binder_len:])
+        pae_int_tot = (np.mean(pae[:binder_len, binder_len:]) + np.mean(pae[binder_len:, :binder_len])) / 2
     else:
-        pae_binder = np.mean(pae[:binder_len, :binder_len]) if binder_len else None
-        pae_target = np.mean(pae[binder_len:, binder_len:]) if binder_len else None
-        plddt_binder = np.mean(scores["plddt"][:binder_len]) if binder_len else None
-        plddt_target = np.mean(scores["plddt"][binder_len:]) if binder_len else None
-        pae_int1 = np.mean(pae[:binder_len, binder_len:]) if binder_len else None
-        pae_int2 = np.mean(pae[binder_len:, :binder_len]) if binder_len else None
+        plddt_binder = plddt_target = pae_binder = pae_target = pae_int_tot = None
 
-    pae_int_tot = (pae_int1 + pae_int2) / 2 if binder_len else None
+    if is_binder_second:
+        pae_binder, pae_target = pae_target, pae_binder
+        plddt_binder, plddt_target = plddt_target, plddt_binder
 
     results = {"plddt": plddt, "pae": np.mean(pae)}
+
     if binder_len:
-        results.update(
-            {
-                "binder_plddt": plddt_binder,
-                "target_plddt": plddt_target,
-                "pae_binder": pae_binder,
-                "pae_target": pae_target,
-                "pae_int_tot": pae_int_tot,
-            }
-        )
+        results.update({"binder_plddt": plddt_binder, "target_plddt": plddt_target, "pae_binder": pae_binder, "pae_target": pae_target, "pae_int_tot": pae_int_tot})
 
     return results
 

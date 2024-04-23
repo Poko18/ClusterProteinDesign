@@ -4,14 +4,14 @@ Binder design pipelines. Mostly still work in process..
 ![binders](imgs/binder_design.png)
 
 ## Round 1 - binder scaffold docking
-Idea is to get get initial binder sequence, that binds to the target protein. 
+Idea is to get get initial binder sequence, that binds to the target protein.
 If you dont care about where binders bind or want to explore prefered binding spots, start with `01a_binder_random_dock.ipynb`.
 If you want to target specific residues, start with start with `01b_binder_dock.ipynb` for docking scaffolds (usually 3HB) or `01c_binder_dock.ipynb` for docking random scaffolds.
 
 ### 1a Random binder location docking
 In the `01a_binder_random_location_dock.ipynb` notebook, main thing you need to do is to change parameters, especailly path to `target_pdb`, `target_chain` and setup number of `iterations`.
 
-Final command will look somewhat like this:  
+Final command will look somewhat like this:
 ```
 sbatch --output=/dev/null --array=0-{scaf_num-1}%{array_lim} helper_scripts/predict_one_binder_random_loc.sh {target_pdb} {target_chain} {scaf_dir} {out_dir} {iterations} {designs_per_iteration} {proteinmpnn_per_input} {recycles} {sampling_temp}
 ```

@@ -1,22 +1,38 @@
-import re
-import os
 import argparse
+import os
+import re
 
 
 def generate_fasta_sequence_from_pdb(pdb_file, output_file):
     ca_pattern = re.compile("^ATOM\s{2,6}\d{1,5}\s{2}CA\s[\sA]([A-Z]{3})\s([\s\w])|^HETATM\s{0,4}\d{1,5}\s{2}CA\s[\sA](MSE)\s([\s\w])")
-    aa3to1={
-        'ALA':'A', 'VAL':'V', 'PHE':'F', 'PRO':'P', 'MET':'M',
-        'ILE':'I', 'LEU':'L', 'ASP':'D', 'GLU':'E', 'LYS':'K',
-        'ARG':'R', 'SER':'S', 'THR':'T', 'TYR':'Y', 'HIS':'H',
-        'CYS':'C', 'ASN':'N', 'GLN':'Q', 'TRP':'W', 'GLY':'G',
-        'MSE':'M',
+    aa3to1 = {
+        "ALA": "A",
+        "VAL": "V",
+        "PHE": "F",
+        "PRO": "P",
+        "MET": "M",
+        "ILE": "I",
+        "LEU": "L",
+        "ASP": "D",
+        "GLU": "E",
+        "LYS": "K",
+        "ARG": "R",
+        "SER": "S",
+        "THR": "T",
+        "TYR": "Y",
+        "HIS": "H",
+        "CYS": "C",
+        "ASN": "N",
+        "GLN": "Q",
+        "TRP": "W",
+        "GLY": "G",
+        "MSE": "M",
     }
-    filename = os.path.basename(pdb_file).split('.')[0]
+    filename = os.path.basename(pdb_file).split(".")[0]
     chain_dict = dict()
     chain_list = []
 
-    with open(pdb_file, 'r') as fp:
+    with open(pdb_file, "r") as fp:
         for line in fp:
             if line.startswith("ENDMDL"):
                 break
@@ -34,9 +50,9 @@ def generate_fasta_sequence_from_pdb(pdb_file, output_file):
     for i, chain in enumerate(chain_list):
         fasta_sequence += chain_dict[chain]
         if i < len(chain_list) - 1:
-            fasta_sequence += ':'
+            fasta_sequence += ":"
 
-    with open(output_file, 'w') as fp:
+    with open(output_file, "w") as fp:
         fp.write(fasta_sequence)
 
     print(f"FASTA sequence saved to {output_file}")

@@ -44,11 +44,11 @@ out_dir="${target_dir}/"
 # Check if ss and adj files exist
 if [ ! -f "$ss" ] || [ ! -f "$adj" ]; then
   echo "One or both of the SS and ADJ files do not exist. Running Python script to generate them..."
-  
+
   conda activate pyro
   # Run Python script to generate ss and adj files
   python helper_scripts/make_secstruc_adj.py --input_pdb "$target_pdb" --out_dir "$out_dir"
-  
+
 else
   echo "SS and ADJ files already exist."
 fi
@@ -129,4 +129,3 @@ for ((i=0; i<${#input_files[@]}; i++)); do
   --num_recycles $num_recycles --num_seqs $total_mpnn --num_filt_seq $mpnn_per_design \
   --results_dataframe $output --save_best_only
 done
-

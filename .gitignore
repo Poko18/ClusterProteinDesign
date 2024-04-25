@@ -3,6 +3,7 @@ testing/*
 targets/*
 **/output/*
 scaffolds/*
+**/target_pdb/*
 !scaffolds/*tar.gz
 pipelines/colabfold_af2/output/*
 pipelines/msa_mpnn_af2/output/*

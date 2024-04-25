@@ -1,6 +1,7 @@
 scripts/*
 testing/*
 targets/*
+**/output/*
 scaffolds/*
 !scaffolds/*tar.gz
 pipelines/colabfold_af2/output/*

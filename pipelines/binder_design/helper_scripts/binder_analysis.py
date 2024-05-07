@@ -221,13 +221,7 @@ def interface_terms(pdb):
     interface_analyzer = analysis.InterfaceAnalyzerMover()
     interface_analyzer.apply(pose)
     data = interface_analyzer.get_all_data()
-    return (
-        data.dG[1],
-        data.dSASA[1],
-        (data.dG_dSASA_ratio * 100),
-        data.delta_unsat_hbonds,
-        data.interface_hbonds,
-    )
+    return data.dG[1], data.dSASA[1], (data.dG_dSASA_ratio * 100), data.delta_unsat_hbonds, data.interface_hbonds
 
 
 def relax_pose(pose, binder_chain="A"):
@@ -266,6 +260,40 @@ def hydrophobic_residue_contacts(pose):
     return hyd_res.score(pose)
 
 
+def get_cms(pose):
+    cms = objs.get_filter("cms")
+    cms.apply(pose)
+    return cms.score(pose)
+
+
+def get_vbuns(pose):
+    vbuns = objs.get_filter("vbuns")
+    vbuns.apply(pose)
+    return vbuns.score(pose)
+
+
+def get_sbuns(pose):
+    sbuns = objs.get_filter("sbuns")
+    sbuns.apply(pose)
+    return sbuns.score(pose)
+
+
+def interface_vbuns(pose, partners):
+    bound_vbuns = get_vbuns(pose)
+    UnboundPose = pose.clone()
+    unbind(UnboundPose, partners)
+    unbound_vbuns = get_vbuns(UnboundPose)
+    return round(bound_vbuns, 3), round(unbound_vbuns, 3)
+
+
+def interface_sbuns(pose, partners):
+    bound_sbuns = get_sbuns(pose)
+    UnboundPose = pose.clone()
+    unbind(UnboundPose, partners)
+    unbound_sbuns = get_sbuns(UnboundPose)
+    return round(bound_sbuns, 3), round(unbound_sbuns, 3)
+
+
 ##################
 
 ### Metric calculations ###
@@ -290,6 +318,12 @@ ddg = calculate_ddg(rpose, partners=f"{binder_chain}_{''.join(target_chain.split
 ddg_score = get_ddg(rpose, relax=False)
 ddg_dsasa_100 = (ddg / interface_sasa) * 100
 ddgscore_dsasa_100 = (ddg_score / interface_sasa) * 100
+cms = get_cms(pose)
+ddg_cms_100 = (ddg / cms) * 100
+vbuns_bound, vbuns_unbound = interface_vbuns(rpose, partners=f"{binder_chain}_{''.join(target_chain.split(','))}")
+vbuns_int = vbuns_bound - vbuns_unbound
+sbuns_bound, sbuns_unbound = interface_sbuns(rpose, partners=f"{binder_chain}_{''.join(target_chain.split(','))}")
+sbuns_int = sbuns_bound - sbuns_unbound
 ################## ddg_dsasa_100 , ddgscore_dsasa_100
 
 metric_columns = [
@@ -307,6 +341,13 @@ metric_columns = [
     "ddg_score",
     "ddg_dsasa_100",
     "ddgscore_dsasa_100",
+    "cms",
+    "vbuns_bound",
+    "vbuns_unbound",
+    "vbuns_int",
+    "sbuns_bound",
+    "sbuns_unbound",
+    "sbuns_int",
 ]
 
 # Write the data to the file, acquiring a lock if necessary
@@ -336,6 +377,13 @@ with open(output_df, "r+") as f:
         ddg_score,
         ddg_dsasa_100,
         ddgscore_dsasa_100,
+        cms,
+        vbuns_bound,
+        vbuns_unbound,
+        vbuns_int,
+        sbuns_bound,
+        sbuns_unbound,
+        sbuns_int,
     ]
 
     # Save the DataFrame back to the CSV file

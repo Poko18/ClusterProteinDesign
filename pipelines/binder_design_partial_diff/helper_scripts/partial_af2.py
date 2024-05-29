@@ -144,7 +144,7 @@ mpnn_model._inputs["bias"][:,aa_order["A"]] = -0.5
 
 ### Add surface residue bias to MPNN model ###
 surface_aa = "DEHKNQRSTY"
-polar_bias_value = 1.5
+polar_bias_value = 1.0
 binder_sel = select_surface_binder_residues(pdb, binder_chains)
 
 print(f"Surface binder residues: {[i+1 for i, x in enumerate(binder_sel) if x]}")

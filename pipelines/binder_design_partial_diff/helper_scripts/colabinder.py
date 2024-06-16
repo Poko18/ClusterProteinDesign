@@ -9,6 +9,11 @@ import pandas as pd
 import numpy as np
 import argparse
 
+import pyrosetta
+from pyrosetta import init, pose_from_file
+from pyrosetta.rosetta.core.select.residue_selector import LayerSelector, ChainSelector, AndResidueSelector
+
+init()
 
 parser = argparse.ArgumentParser(description='Run AFDesign with MPNN sampling')
 parser.add_argument('pdb', type=str, help='input pdb file path')
@@ -56,14 +61,44 @@ af_model.prep_inputs(pdb,
                     rm_aa="C")
 
 
-#Generate ProteinMPNN (100-1000)
+### Generate ProteinMPNN (100-1000)
 print("starting ProteinMPNN")
 mpnn_model = mk_mpnn_model()
 mpnn_model.get_af_inputs(af_model)
 
-# Add alanine anti bias
-mpnn_model._inputs["bias"][:,aa_order["A"]] = -0.5
+### MPNN makes binders always on the second place.. thats why we modify the bias at the end ###
 
+### Add alanine anti bias
+binder_len = af_model._len
+for residue_index in range(binder_len):
+        mpnn_model._inputs["bias"][(residue_index - binder_len), aa_order["A"]] += -0.5
+
+
+### Add surface residue bias
+surface_aa = "DEHKNQRSTY"
+polar_bias_value = 0.8
+
+pose = pose_from_file(pdb)
+layer_selector = LayerSelector()
+layer_selector.set_layers(False, False, True)  # Set core, boundary, surface
+chain_selector = ChainSelector(",".join(binder_chains))
+chain_res = chain_selector.apply(pose)
+combined_selector = AndResidueSelector(layer_selector, chain_selector)
+selected_residues = np.array(combined_selector.apply(pose))
+
+# Selected surfac binder residues
+binder_sel = selected_residues[list(chain_res)]
+print(f"Surface binder residues: {[i+1 for i, x in enumerate(binder_sel) if x]}")
+print(f"Adding bias ({polar_bias_value}) to surface residues: {surface_aa}")
+
+binder_len = af_model._len
+for residue_index in range(binder_len):
+    if binder_sel[residue_index]:
+        for aa in surface_aa:
+            mpnn_model._inputs["bias"][(residue_index - binder_len), aa_order[aa]] += polar_bias_value
+
+
+### Generate sequences
 out = mpnn_model.sample(num=num_seqs//10, batch=10, temperature=sampling_temp)
 
 # Filter top X sequences based on score

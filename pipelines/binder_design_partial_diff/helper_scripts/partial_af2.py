@@ -137,14 +137,17 @@ af_model.prep_inputs(pdb,
 mpnn_model = mk_mpnn_model()
 mpnn_model.get_af_inputs(af_model)
 
+### MPNN makes binders always on the second place.. thats why we modify the bias at the end ###
 
-### Add alanine anti bias to MPNN model ###
-mpnn_model._inputs["bias"][:,aa_order["A"]] = -0.5
+### Add alanine anti bias
+binder_len = af_model._len
+for residue_index in range(binder_len):
+        mpnn_model._inputs["bias"][(residue_index - binder_len), aa_order["A"]] += -0.5
 
 
 ### Add surface residue bias to MPNN model ###
 surface_aa = "DEHKNQRSTY"
-polar_bias_value = 1.0
+polar_bias_value = 0.8
 binder_sel = select_surface_binder_residues(pdb, binder_chains)
 
 print(f"Surface binder residues: {[i+1 for i, x in enumerate(binder_sel) if x]}")

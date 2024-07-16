@@ -89,33 +89,49 @@ def unbind(pose, partners):
     trans_mover.apply(pose)
 
 
-def calculate_ddg(pose, partners, scorefxn=get_fa_scorefxn(), relax=True):
-    # Load the PDB file as a PyRosetta Pose
-    start_pose = pose_from_file(f"{input_pdb}")
-    pose = start_pose.clone()
+def calculate_ddg(pose, partners, scorefxn=None, relax=False):
+    """
+    Calculate the change in binding free energy (ddG) between bound and unbound states.
 
-    # Relax the pose
+    Parameters:
+    - pose (Pose): The initial molecular complex pose.
+    - partners (list): List of chains or components to unbind.
+    - scorefxn (ScoreFunction, optional): Scoring function to use for energy calculations. Defaults to None (uses default full-atom score function).
+    - relax (bool, optional): Flag indicating whether to relax the pose before calculation. Defaults to False.
+
+    Returns:
+    - float: Change in binding free energy (ddG) rounded to three decimal places.
+    """
+    # Clone the initial pose to preserve the original
+    pose = pose.clone()
+
+    # Relax the pose if requested
     if relax:
         relax_pose(pose)
 
-    # Save the relaxed structure
-    relaxPose = pose.clone()
+    # Initialize the scoring function if not provided
+    if scorefxn is None:
+        scorefxn = get_fa_scorefxn()
 
-    # Calculate the bound score
-    scorefxn = get_fa_scorefxn()
+    # Set fa_rep weight to 0 to reduce steric clashes
     scorefxn.set_weight(pyrosetta.rosetta.core.scoring.ScoreType.fa_rep, 0)
-    bound_score = scorefxn(relaxPose)
-    # scorefxn.show(relaxPose)
 
-    # Unbind chains
-    unbind(relaxPose, partners)
+    # Clone the relaxed pose for bound state calculation
+    bound_pose = pose.clone()
 
-    # Calculate the unbound score
-    unbound_score = scorefxn(relaxPose)
-    unboundPose = relaxPose.clone()
+    # Calculate bound score
+    bound_score = scorefxn(bound_pose)
+
+    # Unbind specified partners
+    unbind(bound_pose, partners)
+
+    # Calculate unbound score
+    unbound_score = scorefxn(bound_pose)
 
     # Calculate ddG
-    return round((bound_score - unbound_score), 3)
+    ddg = round((bound_score - unbound_score), 3)
+
+    return ddg
 
 
 def align_structures(pdb1, pdb2):

@@ -185,7 +185,7 @@ if args.thread_sequence:
     else:
         mpnn_model = mk_mpnn_model(weights="soluble")
         mpnn_model.prep_inputs(pdb_filename=pdb, chain="A", verbose=False)
-        out = mpnn_model.sample(num=10 // 10, batch=10, temperature=0.15, verbose=True)
+        out = mpnn_model.sample(num=1, batch=10, temperature=0.15, verbose=True)
         score_list = out["score"]
         sorted_index = sorted(range(len(score_list)), key=lambda k: score_list[k], reverse=False)
         for key, value in out.items():

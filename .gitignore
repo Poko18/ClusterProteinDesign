@@ -1,6 +1,7 @@
 scripts/*
 testing/*
 targets/*
+*.out
 **/output/*
 scaffolds/*
 **/target_pdb/*

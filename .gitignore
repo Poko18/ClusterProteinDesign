@@ -2,6 +2,8 @@ scripts/*
 testing/*
 targets/*
 *.out
+*.log
+*.yaml
 **/output/*
 scaffolds/*
 **/target_pdb/*

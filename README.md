@@ -50,3 +50,5 @@ pip install nvidia-cuda-runtime-cu11==11.7.99
         - [Binder filtering](/pipelines/binder_design#Round-4---binder-filtering-and-sequence-clustering)
 
 - [Binder design with partial diffusion](/pipelines/binder_design_partial_diff)
+
+- [Motif scaffolding](/pipelines/motif_scaffolding)
